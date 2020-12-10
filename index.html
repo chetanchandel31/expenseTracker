@@ -172,7 +172,7 @@
         //view layer
         function renderList (arrayName) {
             const expenseHTML = arrayName.map(expenseItemz => createListItem(expenseItemz)); //converting array of objects to array of templated strings
-            const joinedAllExpenseHTML = expenseHTML.join("");
+            const joinedAllExpenseHTML = expenseHTML.join(""); //converting an array of strings to a single string
             expenseTableEl.innerHTML = joinedAllExpenseHTML;
         }
 
