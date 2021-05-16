@@ -1,204 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Expense</title>
-    <link
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Personal Expense</title>
+		<link
 			rel="stylesheet"
 			href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
 			integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
 			crossorigin="anonymous"
-        />
-        
-        <script
-        defer
-        src="https://use.fontawesome.com/releases/v5.7.2/js/all.js"
-        integrity="sha384-0pzryjIRos8mFBWMzSSZApWtPl/5++eIfzYmTgBBmXYdhvxPc+XcFEk+zJwDgWbP"
-        crossorigin="anonymous"
-    ></script>
-    
-</head>
-<body>
-    <nav class="navbar navbar-dark bg-dark">
-        <span class="navbar-brand mb-0 h1">Expense Tracker</span>
-        <span class="navbar-brand mb-0 h1" id="headingTotal"></span>
-    </nav>
-    <div class = "container-fluid bg-light" style="min-height: 100vh">
-        <div class = "container">
-            <div class="jumbotron mt-4">
-                <div class="input-group mb-3">
-                    <input
-                        type="number"
-                        class="form-control"
-                        id="inputAmount"
-                        placeholder="Amount spent"
-                        aria-label="Amount spent"
-                        aria-describedby="spent in rupee"
-                        autofocus
-                    /> <!-- aria-describedby is same as append span id -->
-                    <div class="input-group-append">
-                        <span class="input-group-text" id="spent in rupee">₹</span>
-                    </div>
-                </div>
-                <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text" id="spent at">@</span>
-                    </div>
-                    <input
-                        type="text"
-                        class="form-control"
-                        id= "inputDesc"
-                        placeholder="spent On"
-                        aria-label="spent On"
-                        aria-describedby="spent at" 
-                    /> <!-- aria-describedby is same as prepend span id -->
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-primary" type="button" id="btnAddExpense">Add</button>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <ul class="list-group" id="expenseTable"></ul>
-            </div>
-            
-            <div id="expenseTable"></div>
-        </div>
-    </div>
-    
-    
-    <script>
-        //get the heading element
-        const headingEl = document.querySelector("#headingTotal");
-        
-        //get the ref to inputDesc element
-        const inputDescEl = document.querySelector("#inputDesc");
+		/>
 
-        //get ref to input amount
-        const inputElement = document.querySelector("#inputAmount");
+		<style>
+			@media (max-width: 600px) {
+				#headingTotal {
+					font-size: medium;
+				}
+			}
+			@media (max-width: 500px) {
+				#headingTotal {
+					font-size: smaller;
+				}
+			}
+		</style>
 
-        //get the ref to table
-       const expenseTableEl = document.querySelector("#expenseTable");
+		<script
+			defer
+			src="https://use.fontawesome.com/releases/v5.7.2/js/all.js"
+			integrity="sha384-0pzryjIRos8mFBWMzSSZApWtPl/5++eIfzYmTgBBmXYdhvxPc+XcFEk+zJwDgWbP"
+			crossorigin="anonymous"
+		></script>
 
+		<!-- The core Firebase JS SDK is always required and must be listed first -->
+		<script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
 
-        //init value of expense at 0
-        let totalExpense = 0;
+		<!-- TODO: Add SDKs for Firebase products that you want to use
+     	https://firebase.google.com/docs/web/setup#available-libraries -->
+		<script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
 
-        //set heading element to total expense
-        headingEl.textContent = totalExpense; //gets executed before function therefore no value change when you add
+		<script>
+			// Your web app's Firebase configuration
+			// Initialize Firebase
+			firebase.initializeApp({
+				apiKey: "AIzaSyBtjRGXbeqMcSGxBmyMm1-Zl6gvc9EQL1w",
+				authDomain: "expense-tracker-3e849.firebaseapp.com",
+				projectId: "expense-tracker-3e849",
+				storageBucket: "expense-tracker-3e849.appspot.com",
+				messagingSenderId: "1086286891937",
+				appId: "1:1086286891937:web:9482ce7efed216ff2e19e0",
+			});
+		</script>
+	</head>
+	<body>
+		<nav class="navbar navbar-dark bg-dark">
+			<span class="navbar-brand mb-0 h1">Expense Tracker</span>
+			<span class="navbar-brand mb-0 h1" id="headingTotal"></span>
+		</nav>
+		<div class="container-fluid bg-light" style="min-height: 100vh">
+			<div class="container">
+				<div class="jumbotron mt-4">
+					<div class="input-group mb-3">
+						<input
+							type="number"
+							class="form-control"
+							id="inputAmount"
+							placeholder="Amount spent"
+							aria-label="Amount spent"
+							aria-describedby="spent in rupee"
+							autofocus
+						/>
+						<!-- aria-describedby is same as append span id -->
+						<div class="input-group-append">
+							<span class="input-group-text" id="spent in rupee">₹</span>
+						</div>
+					</div>
+					<div class="input-group mb-3">
+						<div class="input-group-prepend">
+							<span class="input-group-text" id="spent at">@</span>
+						</div>
+						<input type="text" class="form-control" id="inputDesc" placeholder="spent On" aria-label="spent On" aria-describedby="spent at" />
+						<!-- aria-describedby is same as prepend span id -->
+						<div class="input-group-append">
+							<button class="btn btn-outline-primary" type="button" id="btnAddExpense">Add</button>
+						</div>
+					</div>
+				</div>
+				<div>
+					<ul class="list-group" id="expenseTable"></ul>
+				</div>
 
-        //allExpenses at one place
-        let allExpenses= [];
+				<div id="expenseTable"></div>
+			</div>
+		</div>
 
-        //onButtonClick add inputAmount to totalExpense
-        function addExpenseToTotal() {
-            const expenseItem = {};
-
-            //read value from inputAmount
-            const textAmount = inputElement.value;
-
-            //read the desc from inputDesc
-            const textDesc = inputDescEl.value;
-
-           //convert it to number
-           const expense = parseInt(textAmount, 10); //just for practice, no need to parse if input type is number
-
-           if (expense >= 0 && !isNaN(expense) ) {
-           //put it in object
-           expenseItem.desc = textDesc;
-           expenseItem.amount = expense; 
-           expenseItem.moment = new Date();
-
-           allExpenses.push(expenseItem);
-           
-           //add that value to totalExpense
-           totalExpense = totalExpense + expense;
-
-           
-           //set heading element to totalExpense
-           displayUpdatedTotal();
-        
-        renderList(allExpenses);
-
-        inputDescEl.value = "";
-        inputElement.value = "";
-        }
-        else {
-            alert("Fill the amount column -_-");
-        }
-        }
-
-        //get the btn element
-        const element = document.querySelector("#btnAddExpense");
-        
-        //listen to click event
-        element.addEventListener("click", addExpenseToTotal, false);
-
-        //controller function
-
-        //show total expense on DOM
-        function displayUpdatedTotal() {
-            headingEl.textContent = `Total Expense is: ${totalExpense}`
-        }
-
-        //get date string
-        function getDateString (momento) {
-            return momento.toLocaleDateString ('en-US', {year: 'numeric', month: 'long', day: 'numeric'})
-        }
-
-        //delete items
-        function deleteItem (dateValue, amount) {
-            // const newArr = [];
-            // console.log("delete item was called on", dateValue);
-
-            // for (let i=0; i<allExpenses.length; i++) {
-            //     if (allExpenses[i].moment.valueOf() !== dateValue) {
-            //         newArr.push(allExpenses[i]);
-            //     }
-            // }
-
-            // const newArr = allExpenses.filter (expense => { if (expense.moment.valueOf() !== dateValue) {
-            //     return expense;
-            // }} )
-
-            const newArr = allExpenses.filter(x => x.moment.valueOf() !== dateValue);
-            allExpenses = newArr;
-            renderList(newArr);
-            totalExpense = totalExpense - amount;
-            displayUpdatedTotal();
-
-        }
-
-        //view layer
-        function renderList (arrayName) {
-            const expenseHTML = arrayName.map(expenseItemz => createListItem(expenseItemz)); //converting array of objects to array of templated strings
-            const joinedAllExpenseHTML = expenseHTML.join(""); //converting an array of strings to a single string
-            expenseTableEl.innerHTML = joinedAllExpenseHTML;
-        }
-
-
-        function createListItem ({ desc, amount, moment }) {
-            return `
-            <li class="list-group-item d-flex justify-content-between">
-							<div class="d-flex flex-column">
-								${desc}
-								<small class="text-muted">${getDateString(moment)}</small> <!-- interesting -->
-							</div>
-							<div>
-								<span class="px-5">
-									${amount}
-								</span>
-								<button type="button"
-                                 class="btn btn-outline-danger btn-sm"
-                                 onclick="deleteItem(${moment.valueOf()}, ${amount})"
-                                 style = "float : right">
-									<i class="fas fa-trash-alt"></i>
-								</button>
-							</div>
-						</li>
-            `
-        }
-        
-    </script>
-</body>
+		<script src="app.js" defer></script>
+	</body>
 </html>
