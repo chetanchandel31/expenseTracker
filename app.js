@@ -1,31 +1,61 @@
-//getting references
+// getting references
 const headingEl = document.querySelector("#headingTotal");
 const inputDescEl = document.querySelector("#inputDesc");
 const inputElement = document.querySelector("#inputAmount");
 const expenseTableEl = document.querySelector("#expenseTable");
 const element = document.querySelector("#btnAddExpense");
+const signInBtn = document.querySelector("#signInBtn");
+const signOutBtn = document.querySelector("#signOutBtn");
+const whenLoggedIn = document.querySelector("#whenLoggedIn");
+const whenLoggedOut = document.querySelector("#whenLoggedOut");
 
-//listen to click event
+// event listeners
 element.addEventListener("click", addExpenseItem, false);
+signInBtn.addEventListener("click", () => firebase.auth().signInWithPopup(provider));
+signOutBtn.addEventListener("click", () => firebase.auth().signOut());
 
-//firebase stuff
+// firebase stuff
 console.log(firebase);
 const db = firebase.firestore();
+const provider = new firebase.auth.GoogleAuthProvider();
 const { serverTimestamp } = firebase.firestore.FieldValue;
-const expenseCollectionRef = db.collection("expenses");
-const totalExpenseRef = db.collection("totalExpense").doc("6OOfox0sDzOjoeCiKZYj");
+let expenseCollectionRef;
+let userUid;
+let userDisplayName;
+let unsubscribeTotalExpenseRef;
+let unsubscribeExpenseCollectionRef;
+let isFirstFirestoreFetch = true;
 
 let currentTotalExpense = 0;
 
-totalExpenseRef.onSnapshot(doc => {
-	let { totalExpense } = doc.data();
-	currentTotalExpense = totalExpense;
-	headingEl.textContent = `Total Expense: ${currentTotalExpense}`;
-});
+// firebase auth (1. switch between home and signin div 2. subscribe & unsubscibe from firestore)
+firebase.auth().onAuthStateChanged(user => {
+	if (user) {
+		userUid = user.uid;
+		userDisplayName = user.displayName;
+		expenseCollectionRef = db.collection(`users/${userUid}/expenses`);
 
-expenseCollectionRef.orderBy("moment", "asc").onSnapshot(snap => {
-	let documents = snap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-	renderList(documents);
+		// listening to changes in firestore
+		unsubscribeExpenseCollectionRef = expenseCollectionRef.orderBy("moment", "asc").onSnapshot(snap => {
+			let documents = snap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+			if (isFirstFirestoreFetch) findAndRenderTotalExpense(documents);
+			renderList(documents);
+		});
+
+		whenLoggedIn.hidden = false;
+		whenLoggedOut.hidden = true;
+		signOutBtn.hidden = false;
+	} else {
+		whenLoggedIn.hidden = true;
+		whenLoggedOut.hidden = false;
+		signOutBtn.hidden = true;
+
+		isFirstFirestoreFetch = true;
+
+		clearPrevUserDataFromDOM();
+
+		unsubscribeExpenseCollectionRef();
+	}
 });
 
 //custom functions
@@ -40,7 +70,7 @@ function addExpenseItem() {
 	if (textDesc && expense >= 0 && !isNaN(expense)) {
 		expenseCollectionRef.add({ desc: textDesc, amount: expense, moment: serverTimestamp() });
 		currentTotalExpense += expense;
-		totalExpenseRef.set({ totalExpense: currentTotalExpense });
+		displayUpdatedTotal();
 
 		inputDescEl.value = "";
 		inputElement.value = "";
@@ -52,6 +82,10 @@ function addExpenseItem() {
 }
 
 //controller function
+function displayUpdatedTotal() {
+	headingEl.textContent = `${userDisplayName}'s total expense: ${currentTotalExpense}`;
+}
+
 function getDateString(moment) {
 	return moment?.toDate().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }
@@ -59,13 +93,26 @@ function getDateString(moment) {
 function deleteItem(id, amount) {
 	expenseCollectionRef.doc(id).delete();
 	currentTotalExpense -= amount;
-	totalExpenseRef.set({ totalExpense: currentTotalExpense });
+	displayUpdatedTotal();
 }
 
-//view layer
+function findAndRenderTotalExpense(array) {
+	array.forEach(item => {
+		currentTotalExpense += item.amount;
+	});
+	headingEl.textContent = `${userDisplayName}'s total expense: ${currentTotalExpense}`;
+	isFirstFirestoreFetch = false; // makes sure it runs only once
+}
+
+function clearPrevUserDataFromDOM() {
+	headingEl.textContent = "";
+	expenseTableEl.innerHTML = "";
+	currentTotalExpense = 0;
+}
+
 function renderList(arrayName) {
 	const expenseHTML = arrayName.map(expenseItems => createListItem(expenseItems)); //converting array of objects to array of templated strings
-	const joinedAllExpenseHTML = expenseHTML.join(""); //converting an array of strings to a single string
+	const joinedAllExpenseHTML = expenseHTML.join(" "); //converting an array of strings to a single string
 	expenseTableEl.innerHTML = joinedAllExpenseHTML;
 }
 

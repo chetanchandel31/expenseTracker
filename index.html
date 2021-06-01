@@ -11,18 +11,7 @@
 			crossorigin="anonymous"
 		/>
 
-		<style>
-			@media (max-width: 600px) {
-				#headingTotal {
-					font-size: medium;
-				}
-			}
-			@media (max-width: 500px) {
-				#headingTotal {
-					font-size: smaller;
-				}
-			}
-		</style>
+		<link rel="stylesheet" href="styles.css" />
 
 		<script
 			defer
@@ -37,6 +26,7 @@
 		<!-- TODO: Add SDKs for Firebase products that you want to use
      	https://firebase.google.com/docs/web/setup#available-libraries -->
 		<script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/8.6.2/firebase-auth.js"></script>
 
 		<script>
 			// Your web app's Firebase configuration
@@ -54,10 +44,14 @@
 	<body>
 		<nav class="navbar navbar-dark bg-dark">
 			<span class="navbar-brand mb-0 h1">Expense Tracker</span>
-			<span class="navbar-brand mb-0 h1" id="headingTotal"></span>
+			<span class="navbar-brand mb-0">
+				<button id="signOutBtn">Logout</button>
+			</span>
 		</nav>
-		<div class="container-fluid bg-light" style="min-height: 100vh">
+
+		<div class="container-fluid bg-light" id="whenLoggedIn">
 			<div class="container">
+				<div id="headingTotal"></div>
 				<div class="jumbotron mt-4">
 					<div class="input-group mb-3">
 						<input
@@ -86,11 +80,16 @@
 					</div>
 				</div>
 				<div>
-					<ul class="list-group" id="expenseTable"></ul>
+					<ul class="list-group" id="expenseTable">
+						<h3>Loading...</h3>
+					</ul>
 				</div>
-
-				<div id="expenseTable"></div>
 			</div>
+		</div>
+
+		<div id="whenLoggedOut">
+			<img src="./images/icon.svg" />
+			<button id="signInBtn">Sign in with google</button>
 		</div>
 
 		<script src="app.js" defer></script>
