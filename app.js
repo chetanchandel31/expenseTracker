@@ -43,13 +43,13 @@ firebase.auth().onAuthStateChanged(user => {
 			renderList(documents);
 		});
 
-		whenLoggedIn.hidden = false;
-		whenLoggedOut.hidden = true;
-		signOutBtn.hidden = false;
+		whenLoggedIn.style.display = "block";
+		whenLoggedOut.style.display = "none";
+		signOutBtn.style.display = "inline";
 	} else {
-		whenLoggedIn.hidden = true;
-		whenLoggedOut.hidden = false;
-		signOutBtn.hidden = true;
+		whenLoggedIn.style.display = "none";
+		whenLoggedOut.style.display = "flex";
+		signOutBtn.style.display = "none";
 
 		isFirstFirestoreFetch = true;
 

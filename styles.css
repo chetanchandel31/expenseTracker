@@ -4,6 +4,11 @@
 	font-family: "Roboto", sans-serif;
 }
 
+#whenLoggedIn,
+.navbar-brand button {
+	display: none;
+}
+
 #headingTotal {
 	padding-top: 20px;
 	text-align: center;
