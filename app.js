@@ -6,6 +6,7 @@ const expenseTableEl = document.querySelector("#expenseTable");
 const element = document.querySelector("#btnAddExpense");
 const signInBtn = document.querySelector("#signInBtn");
 const signOutBtn = document.querySelector("#signOutBtn");
+const guestSignInBtn = document.querySelector("#guestSignInBtn");
 const whenLoggedIn = document.querySelector("#whenLoggedIn");
 const whenLoggedOut = document.querySelector("#whenLoggedOut");
 
@@ -13,16 +14,16 @@ const whenLoggedOut = document.querySelector("#whenLoggedOut");
 element.addEventListener("click", addExpenseItem, false);
 signInBtn.addEventListener("click", () => firebase.auth().signInWithPopup(provider));
 signOutBtn.addEventListener("click", () => firebase.auth().signOut());
+guestSignInBtn.addEventListener("click", () => firebase.auth().signInWithEmailAndPassword("test@test.com", "testtest"));
 
 // firebase stuff
-console.log(firebase);
+// console.log(firebase);
 const db = firebase.firestore();
 const provider = new firebase.auth.GoogleAuthProvider();
 const { serverTimestamp } = firebase.firestore.FieldValue;
 let expenseCollectionRef;
 let userUid;
 let userDisplayName;
-let unsubscribeTotalExpenseRef;
 let unsubscribeExpenseCollectionRef;
 let isFirstFirestoreFetch = true;
 
@@ -52,9 +53,9 @@ firebase.auth().onAuthStateChanged(user => {
 
 		isFirstFirestoreFetch = true;
 
-		clearPrevUserDataFromDOM();
+		clearPrevUserData();
 
-		unsubscribeExpenseCollectionRef();
+		unsubscribeExpenseCollectionRef && unsubscribeExpenseCollectionRef();
 	}
 });
 
@@ -81,7 +82,6 @@ function addExpenseItem() {
 	}
 }
 
-//controller function
 function displayUpdatedTotal() {
 	headingEl.textContent = `${userDisplayName}'s total expense: ${currentTotalExpense}`;
 }
@@ -104,9 +104,9 @@ function findAndRenderTotalExpense(array) {
 	isFirstFirestoreFetch = false; // makes sure it runs only once
 }
 
-function clearPrevUserDataFromDOM() {
+function clearPrevUserData() {
 	headingEl.textContent = "";
-	expenseTableEl.innerHTML = "";
+	expenseTableEl.innerHTML = "<h3>Loading...</h3>";
 	currentTotalExpense = 0;
 }
 
