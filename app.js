@@ -106,7 +106,7 @@ function findAndRenderTotalExpense(array) {
 
 function clearPrevUserData() {
 	headingEl.textContent = "";
-	expenseTableEl.innerHTML = "<h3>Loading...</h3>";
+	expenseTableEl.innerHTML = '<div class="loader"></div>';
 	currentTotalExpense = 0;
 }
 
