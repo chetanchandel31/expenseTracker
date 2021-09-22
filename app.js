@@ -12,9 +12,13 @@ const whenLoggedOut = document.querySelector("#whenLoggedOut");
 
 // event listeners
 element.addEventListener("click", addExpenseItem, false);
-signInBtn.addEventListener("click", () => firebase.auth().signInWithPopup(provider));
+signInBtn.addEventListener("click", () =>
+  firebase.auth().signInWithPopup(provider)
+);
 signOutBtn.addEventListener("click", () => firebase.auth().signOut());
-guestSignInBtn.addEventListener("click", () => firebase.auth().signInWithEmailAndPassword("test@test.com", "testtest"));
+guestSignInBtn.addEventListener("click", () =>
+  firebase.auth().signInWithEmailAndPassword("test@test.com", "testtest")
+);
 
 // firebase stuff
 // console.log(firebase);
@@ -30,94 +34,108 @@ let isFirstFirestoreFetch = true;
 let currentTotalExpense = 0;
 
 // firebase auth (1. switch between home and signin div 2. subscribe & unsubscibe from firestore)
-firebase.auth().onAuthStateChanged(user => {
-	if (user) {
-		userUid = user.uid;
-		userDisplayName = user.displayName;
-		expenseCollectionRef = db.collection(`users/${userUid}/expenses`);
+firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    userUid = user.uid;
+    userDisplayName = user.displayName;
+    expenseCollectionRef = db.collection(`users/${userUid}/expenses`);
 
-		// listening to changes in firestore
-		unsubscribeExpenseCollectionRef = expenseCollectionRef.orderBy("moment", "asc").onSnapshot(snap => {
-			let documents = snap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-			if (isFirstFirestoreFetch) findAndRenderTotalExpense(documents);
-			renderList(documents);
-		});
+    // listening to changes in firestore
+    unsubscribeExpenseCollectionRef = expenseCollectionRef
+      .orderBy("moment", "asc")
+      .onSnapshot((snap) => {
+        let documents = snap.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        if (isFirstFirestoreFetch) findAndRenderTotalExpense(documents);
+        renderList(documents);
+      });
 
-		whenLoggedIn.style.display = "block";
-		whenLoggedOut.style.display = "none";
-		signOutBtn.style.display = "inline";
-	} else {
-		whenLoggedIn.style.display = "none";
-		whenLoggedOut.style.display = "flex";
-		signOutBtn.style.display = "none";
+    whenLoggedIn.style.display = "block";
+    whenLoggedOut.style.display = "none";
+    signOutBtn.style.display = "inline";
+  } else {
+    whenLoggedIn.style.display = "none";
+    whenLoggedOut.style.display = "flex";
+    signOutBtn.style.display = "none";
 
-		isFirstFirestoreFetch = true;
+    isFirstFirestoreFetch = true;
 
-		clearPrevUserData();
+    clearPrevUserData();
 
-		unsubscribeExpenseCollectionRef && unsubscribeExpenseCollectionRef();
-	}
+    unsubscribeExpenseCollectionRef && unsubscribeExpenseCollectionRef();
+  }
 });
 
 //custom functions
 function addExpenseItem() {
-	//read values from input fields
-	const textAmount = inputElement.value;
-	const textDesc = inputDescEl.value;
+  //read values from input fields
+  const textAmount = inputElement.value;
+  const textDesc = inputDescEl.value;
 
-	//convert amount to number
-	const expense = parseInt(textAmount, 10);
+  //convert amount to number
+  const expense = parseInt(textAmount, 10);
 
-	if (textDesc && expense >= 0 && !isNaN(expense)) {
-		expenseCollectionRef.add({ desc: textDesc, amount: expense, moment: serverTimestamp() });
-		currentTotalExpense += expense;
-		displayUpdatedTotal();
+  if (textDesc && expense >= 0 && !isNaN(expense)) {
+    expenseCollectionRef.add({
+      desc: textDesc,
+      amount: expense,
+      moment: serverTimestamp(),
+    });
+    currentTotalExpense += expense;
+    displayUpdatedTotal();
 
-		inputDescEl.value = "";
-		inputElement.value = "";
-	} else if (expense <= 0) {
-		alert('Would you really call that amount an "expense"? 😅');
-	} else {
-		alert("Invalid input. Have you filled all columns?");
-	}
+    inputDescEl.value = "";
+    inputElement.value = "";
+  } else if (expense <= 0) {
+    alert('Would you really call that amount an "expense"? 😅');
+  } else {
+    alert("Invalid input. Have you filled all columns?");
+  }
 }
 
 function displayUpdatedTotal() {
-	headingEl.textContent = `${userDisplayName}'s total expense: ${currentTotalExpense}`;
+  headingEl.textContent = `${userDisplayName}'s total expense: ${currentTotalExpense}`;
 }
 
 function getDateString(moment) {
-	return moment?.toDate().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  return moment
+    ?.toDate()
+    .toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
 }
 
 function deleteItem(id, amount) {
-	expenseCollectionRef.doc(id).delete();
-	currentTotalExpense -= amount;
-	displayUpdatedTotal();
+  expenseCollectionRef.doc(id).delete();
+  currentTotalExpense -= amount;
+  displayUpdatedTotal();
 }
 
 function findAndRenderTotalExpense(array) {
-	array.forEach(item => {
-		currentTotalExpense += item.amount;
-	});
-	headingEl.textContent = `${userDisplayName}'s total expense: ${currentTotalExpense}`;
-	isFirstFirestoreFetch = false; // makes sure it runs only once
+  array.forEach((item) => {
+    currentTotalExpense += item.amount;
+  });
+  headingEl.textContent = `${userDisplayName}'s total expense: ${currentTotalExpense}`;
+  isFirstFirestoreFetch = false; // makes sure it runs only once
 }
 
 function clearPrevUserData() {
-	headingEl.textContent = "";
-	expenseTableEl.innerHTML = '<div class="loader"></div>';
-	currentTotalExpense = 0;
+  headingEl.textContent = "";
+  expenseTableEl.innerHTML = '<div class="loader"></div>';
+  currentTotalExpense = 0;
 }
 
 function renderList(arrayName) {
-	const expenseHTML = arrayName.map(expenseItems => createListItem(expenseItems)); //converting array of objects to array of templated strings
-	const joinedAllExpenseHTML = expenseHTML.join(" "); //converting an array of strings to a single string
-	expenseTableEl.innerHTML = joinedAllExpenseHTML;
+  const expenseHTML = arrayName.map((expenseItems) =>
+    createListItem(expenseItems)
+  ); //converting array of objects to array of templated strings
+  const joinedAllExpenseHTML = expenseHTML.join(" "); //converting an array of strings to a single string
+  expenseTableEl.innerHTML = joinedAllExpenseHTML;
 }
 
 function createListItem({ desc, amount, moment, id }) {
-	return `
+  return `
             <li class="list-group-item d-flex justify-content-between">
 				<div class="d-flex flex-column">
 					${desc}
